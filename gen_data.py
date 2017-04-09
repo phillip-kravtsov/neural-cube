@@ -1,4 +1,9 @@
-import kociemba
+#This file is unused, but is in the repository to show how the data
+#were generated for phase 2. Phase 1 generations were done using some
+#java code that's not in the repository. 
+#if you wish to run it, install kociemba and uncomment the import.
+
+#import kociemba
 import cube
 import numpy as np
 #'DRLU U BFBR
@@ -13,8 +18,8 @@ def get_int(a):
     string = "UDFRBL"
     ret = []
     for i in xrange(len(d)):
-        base = string.find(d[i][0]) 
-        
+        base = string.find(d[i][0])
+
         if (len(d[i]) == 1):
             ret.append(base)
         elif(d[i][1] == "2"):
@@ -49,7 +54,7 @@ def to_lc(i):
     return s[int(i)]
 def to_lfd(d):
     #fix d --> rearrange
-    #current :UDRB D FFUF 
+    #current :UDRB D FFUF
     #goal:    FUFF D BRDU
     ret = ""
     for i in xrange(len(d)):
@@ -61,7 +66,7 @@ def to_l(cube):
     #print cube.shape
 
     cube = np.reshape(cube, [-1,])
-    #print cube.shape 
+    #print cube.shape
     b_fix = ""
     for i in xrange(cube.shape[0]):
         b_fix += to_lc(cube[i])
@@ -98,7 +103,7 @@ def init_data():
   f = open("data/p2data.txt", 'w')
 def write(f, cube):
     cube = cube.astype(np.int32)
-    
+
     for i in range(cube.shape[0]):
         for j in range(cube.shape[1]):
             f.write(str(cube[i,j]))
@@ -106,7 +111,7 @@ def write(f, cube):
 def get_distance(cube):
   soltn = kociemba.solve(to_l(cube))
   return get_len(soltn)
-  
+
 def mwrite(f, m):
   if (m is None):
     for i in range(10):
@@ -120,7 +125,7 @@ def mwrite(f, m):
 def gen():
   for i in range(19000):
     if (i % 100 == 0):
-        print i
+        print (i)
     q.handscramble_p2()
     c = np.copy(q.cube)
     soltn = kociemba.solve(to_l(q.cube))
@@ -137,15 +142,15 @@ def gen():
         c = q.execute_turn(p2[j], c)
         write(f,c)
         f.write(str(len(p2) - j - 1))
-        f.write("\n") 
+        f.write("\n")
     #record cube, len(p2)
     #apply turn, record len(p2 - 1)...
     #end
 def gen_mv():
- 
+
   for i in range(50000):
     if (i% 100 == 0):
-      print i
+      print(i)
     global q
     q.handscramble_p2()
     c = np.copy(q.cube)
@@ -165,8 +170,6 @@ def gen_mv():
 
       f.write(str(p2[j]))
       f.write("\n")
-      
+
       c = q.execute_turn(p2[j], c)
-#gen()    
-
-
+#gen()

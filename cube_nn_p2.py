@@ -2,7 +2,9 @@ import time
 import numpy as np
 import tensorflow as tf
 import nn_utils as utils
+
 graph = tf.Graph()
+
 with graph.as_default():
   k = 2.0
   learning_rate = .001
@@ -23,11 +25,13 @@ with graph.as_default():
   def net(x, w, b):
     fc1 = tf.matmul(x, w['w1']) +  b['b1']
     fc1 = tf.nn.relu(fc1)
+
     fc2 = tf.nn.relu(tf.matmul(fc1, weights['w2']) + b['b2'])
+
     fc3 = tf.nn.relu(tf.matmul(fc2, weights['w3']) + b['b3'])
-    
-    out = tf.matmul(fc3, weights['out']) + biases['out']
-  
+
+    out = tf.matmul(fc3, weights['out']) + biases['bout']
+
     return out
 
   weights = {
@@ -42,7 +46,7 @@ with graph.as_default():
     'b1' : utils.var_rn([n_fc1]),
     'b2' : utils.var_rn([n_fc2]),
     'b3' : utils.var_rn([n_fc3]),
-    'out': utils.var_rn([n_output]),
+    'bout': utils.var_rn([n_output]),
   }
 
   pred = net(x, weights, biases)
@@ -56,21 +60,23 @@ with graph.as_default():
 
   display_step = 1000
   t_display = 1000
-  init = tf.initialize_all_variables()
+  init = tf.global_variables_initializer()
   saver = tf.train.Saver()
 
   def next_batch(data, step):
     bpe = data.shape[0] / batch_size
     step %= bpe
-    return data[step * batch_size: (step + 1) * batch_size, :] 
+    return data[step * batch_size: (step + 1) * batch_size, :]
 
   def load_data():
     global full_data, train_data, test_data, val_data, train_data
     full_data = np.genfromtxt("data/p2_h_data.txt", max_rows = 220000)
-    print "Data retrieved"
-    np.random.seed(12)
+    print("Data retrieved")
+
+    np.random.seed(2718)
     np.random.shuffle(full_data)
-    print full_data.shape
+
+    print(full_data.shape)
     train_data, test_data = np.split(full_data, [(95 * full_data.shape[0])/100])
     val_data, train_data = np.split(train_data, [(2 * train_data.shape[0])/100])
 
@@ -82,42 +88,42 @@ with graph.as_default():
           saver.restore(sess, 'cubennp2.ckpt')
         else:
           sess.run(init)
-        step = 1  
+        step = 1
         np.random.shuffle(train_data)
-     
+
         while (step < steps):
           bpe = train_data.shape[0] / batch_size
           if (step % bpe == 0):
             np.random.shuffle(train_data)
+
           n_b = next_batch(train_data, step)
           batch_x, batch_y = n_b[:,:-1], np.reshape(n_b[:,-1], (n_b.shape[0], 1))
           sess.run(optimizer, feed_dict={x:batch_x, y:batch_y, keep_prob: dropout})
-          
+
           if (step % display_step == 0):
             val_x, val_y = val_data[:,:-1], np.reshape(val_data[:,-1],( val_data.shape[0],1))
             loss, acc, d = sess.run([cost, accuracy, delta], feed_dict={x:val_x, y:val_y, keep_prob:1.0})
-            
-            print "Step: %d, Loss: %f, Accuracy: %f"%(step, loss, acc)
-            
+
+            print("Step: %d, Loss: %f, Accuracy: %f"%(step, loss, acc))
+
             if (loss < 1.2 and write):
-          #save_path = s.save(sess, 'cubennp2.ckpt')
               saver.save(sess, "cubennp2.ckpt")
               return
           if (step % t_display == 0):
             t_x, t_y = train_data[:10000,:-1], np.reshape(train_data[:10000,-1], (10000,1))
             t_loss, t_acc = sess.run([cost, accuracy], feed_dict = {x:t_x, y:t_y, keep_prob:1.0})
-            print "tloss: %f, tacc: %f "%(t_loss, t_acc)
-            print "\n"
-    
+            print("tloss: %f, tacc: %f "%(t_loss, t_acc))
+            print("\n")
+
         #val_x, val_y = val_data[:,:-1], np.reshape(val_data[:,-1], (val_data.shape[0],1))
           step+= 1
 
         if (write):
-          print "Writing in 10 seconds."
+          print("Writing in 10 seconds.")
           time.sleep(10)
-          print "Writing."
+          print("Writing.")
           saver.save(sess, 'cubennp2.ckpt')
-        
+
  # train(True, True)
 #sess = tf.Session()
 #s.restore(sess, 'cubennp2.ckpt')
@@ -127,6 +133,3 @@ with graph.as_default():
 #print sess.run(weights['w2'])
 #load_data()
 #print sess.run(worst,feed_dict={x:val_data[:,:-1], y:np.reshape(val_data[:,-1], [-1,1]), keep_prob:1.0})
-
-
-

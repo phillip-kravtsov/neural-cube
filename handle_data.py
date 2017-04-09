@@ -3,7 +3,7 @@ import numpy as np
 
 def cut_centers(data):
   data = np.delete(data, [4,13,22,31,40,49], 1)
-  return data  
+  return data
 def get_data():
   global full_data
   return np.genfromtxt("data/data.txt", max_rows = 300000)
@@ -33,7 +33,7 @@ def p1_get_edges(cube):
     front = (cube[index[i], index[i+1]])
     side = (cube[index[i+2], index[i+3]])
     e.append(eo(front, side))
-  
+
   return np.array(e).astype(np.int32)
 
 def one_hot(array, classes):
@@ -64,19 +64,19 @@ def p2_h_process(data):
   data = cut_centers(data)
   data = cube_one_hot(data)
   return data
-  
+
 def process(full_data, with_labels, phase):
   if (full_data.ndim == 1):
     expand(full_data)
-  print full_data.shape
+  print(full_data.shape)
   prev = False
   edges = []
   for i in full_data:
     edges.append(p1_get_edges(np.reshape(i[:-1], (6,-1))))
   e = np.array(edges)
-  print e
-  print e.shape
-  full_data = cut_centers(full_data) 
+  print(e)
+  print(e.shape)
+  full_data = cut_centers(full_data)
   if (with_labels):
     if (prev):
       bin_inputs = full_data[:,:-11]
@@ -86,7 +86,7 @@ def process(full_data, with_labels, phase):
     bin_inputs = full_data
   if (phase == 1):
     combined = np.hstack([bin_inputs < 2 , e])
-    
+
   if (phase == 2):
     bin_inputs = bin_inputs[:,:]
     #print bin_inputs.shape
@@ -98,7 +98,7 @@ def process(full_data, with_labels, phase):
     r = bin_inputs == 5
     combined = np.hstack([w,y,g,o,b,r])
   #print combined.shape
-  
+
   if (with_labels):
     if(prev):
       labels = full_data[:,-11:]
@@ -111,7 +111,7 @@ def process(full_data, with_labels, phase):
 def fix(labels):
   a = labels > 1
   labels[a] -= 4
-  print labels
+  print(labels)
   return labels
 def do_things():
   bin_data = process(get_data(), True, 1)

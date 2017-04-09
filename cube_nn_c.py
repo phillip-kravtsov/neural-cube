@@ -33,7 +33,7 @@ with graph.as_default():
     fc4 = tf.nn.relu(tf.matmul(fc3, w['w4']) + b['b4'])
     fc5 = tf.nn.relu(tf.matmul(fc4, w['w5']) + b['b5'])
     fc5 = tf.nn.dropout(fc5, keep_prob)
-    out = tf.matmul(fc5, weights['out']) + biases['out'] + tf.matmul(x[:,n_input - n_output:], weights['prev_move'])
+    out = tf.matmul(fc5, weights['out']) + biases['bout'] + tf.matmul(x[:,n_input - n_output:], weights['prev_move'])
     return tf.nn.softmax(out)
 
   weights = {
@@ -51,7 +51,7 @@ with graph.as_default():
     'b3' : tf.Variable(tf.truncated_normal([n_fc3], stddev=0.1)),
     'b4' : tf.Variable(tf.truncated_normal([n_fc4], stddev=0.1)),
     'b5' : tf.Variable(tf.truncated_normal([n_fc5], stddev=0.1)),
-    'out': tf.Variable(tf.truncated_normal([n_output], stddev=0.1)),
+    'bout': tf.Variable(tf.truncated_normal([n_output], stddev=0.1)),
   }
 
   pred = net(x, weights, biases)
@@ -65,7 +65,7 @@ with graph.as_default():
   top_k_acc = tf.reduce_mean(tf.cast(correct_top, tf.float32))
   display_step = 1000
 
-  init = tf.initialize_all_variables()
+  init = tf.global_variables_initializer()
   saver = tf.train.Saver()
   def one_hot(array):
     return np.reshape(np.eye(n_output)[array], [-1,n_output])
@@ -79,9 +79,9 @@ with graph.as_default():
     global full_data, train_data, test_data, val_data, train_data
     full_data = np.genfromtxt("data/fdata2.txt", max_rows=300000)
     np.random.shuffle(full_data)
-    print full_data.shape
+    print(full_data.shape)
     train_data, test_data = np.split(full_data, [(95 * full_data.shape[0])/100])
-    print train_data
+
     val_data, train_data = np.split(train_data, [(10 * train_data.shape[0])/100])
 
   def get_xy(data):
@@ -91,25 +91,25 @@ with graph.as_default():
     with tf.Session(graph=graph) as sess:
       if (get):
         saver.restore(sess, "mvnet1.ckpt")
-      else: 
-        sess.run(init)  
+      else:
+        sess.run(init)
       step = 1
       np.random.shuffle(train_data)
       bpe = train_data.shape[0] / batch_size
       while (step < steps):
-      
+
         global learning_rate
         if (step == 5000):
           learning_rate = .001
           pass
         if (step % bpe == 0):
-          print "step: %d , shuffling"%(step)
+          print("step: %d , shuffling"%(step))
           np.random.shuffle(train_data)
-        
-      
+
+
         n_b = next_batch(train_data, step)
         b_x, b_y = get_xy(n_b)
-        #print b_x 
+        #print b_x
         sess.run(optimizer, feed_dict={x:b_x, y:b_y, keep_prob:dropout})
 
         if (step % display_step == 1):
@@ -120,16 +120,9 @@ with graph.as_default():
             return
           t_x, t_y = get_xy(train_data[:10000])
           t_l, t_a = sess.run([cross_entropy, accuracy], feed_dict = {x:t_x, y:t_y, keep_prob:1.0})
-        
-          print "Step: %d \nLoss: %f, Accuracy: %f , Top_K accuracy: %f\nt_loss: %f, t_acc: %f"%(step, loss, acc, topk,t_l, t_a)
-        
+
+          print("Step: %d \nLoss: %f, Accuracy: %f , Top_K accuracy: %f\nt_loss: %f, t_acc: %f"%(step, loss, acc, topk,t_l, t_a))
+
         step += 1
       if (write):
         saver.save(sess, 'mvnet1.ckpt')
-  
-  #train(True, True)
-
-
-
-
-
